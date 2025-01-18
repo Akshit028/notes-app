@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { User } from 'lucide-react';
 import options from "@/config/auth"
 import { getServerSession } from "next-auth"
-import AuthButton from "./auth-button";
+import AuthButton from "./authButton";
 
 const ProfileMenu = async () => {
   const session = (await getServerSession(options))!

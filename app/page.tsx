@@ -1,5 +1,5 @@
-import AuthButton from "@/components/auth-button";
-import CheckUser from "@/components/check-user";
+import AuthButton from "@/components/authButton";
+import CheckUser from "@/components/checkUser";
 
 const Home = async() => {
   await CheckUser();

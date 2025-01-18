@@ -2,7 +2,7 @@
 
 import { SessionProvider } from 'next-auth/react'
 import React, { ReactNode } from 'react'
-import ThemeProvider from "@/components/theme-provider"
+import ThemeProvider from "@/components/themeProvider"
 
 const Providers = ({ children }: { children: ReactNode }) => {
     return <ThemeProvider

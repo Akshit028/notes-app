@@ -16,9 +16,10 @@ model User {
   accounts      Account[]
   sessions      Session[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  Note      Note[] @relation("UserNotes")
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  Note      Note[]     @relation("UserNotes")
+  Category  Category[] @relation("UserCategories")
 }
 
 model Account {
@@ -57,11 +58,24 @@ model Note {
   title   String
   content String
   userId  String
+  categoryId  String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user User @relation("UserNotes", fields: [userId], references: [id], onDelete: Cascade)
+  user       User      @relation("UserNotes", fields: [userId], references: [id], onDelete: Cascade)
+  Category   Category? @relation("CategoryNotes", fields: [categoryId], references: [id])
 
   @@index([userId])
+  @@index([categoryId])
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String
+  userId    String
+  user      User     @relation("UserCategories", fields: [userId], references: [id], onDelete: Cascade)
+  notes  Note[] @relation("CategoryNotes")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

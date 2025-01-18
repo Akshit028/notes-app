@@ -1,6 +1,6 @@
-import NotesComponent from '@/components/notes-component';
+import NotesComponent from '@/components/notesComponent';
 import options from '@/config/auth'
-import requireAuth from '@/utils/require-auth';
+import requireAuth from '@/utils/requireAuth';
 import type { NextPage } from 'next';
 import { getServerSession } from 'next-auth'
 import React from 'react'

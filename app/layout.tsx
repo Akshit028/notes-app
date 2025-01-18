@@ -5,8 +5,8 @@ import Providers from "@/components/providers";
 import { Suspense } from "react";
 import { getServerSession } from "next-auth";
 import options from "@/config/auth";
-import ProfileMenu from "@/components/profile-menu";
-import ModeToggle from "@/components/mode-toggle";
+import ProfileMenu from "@/components/profileMenu";
+import ModeToggle from "@/components/modeToggle";
 
 const poppins = Poppins({
   weight: ["400", "500", "600"],
