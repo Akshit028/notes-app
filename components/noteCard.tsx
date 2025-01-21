@@ -1,7 +1,7 @@
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
-import type { Note } from '@/types/note';
+import type { Note } from '@/types/types';
 
 interface NoteCardProps {
     note: Note;

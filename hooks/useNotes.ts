@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { Note, CreateNoteInput } from '@/types/note';
+import type { Note, CreateNoteInput } from '@/types/types';
 
 export const useNotes = () => {
     const [notes, setNotes] = useState<Note[]>([]);

@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ArrowLeft, Save } from 'lucide-react';
-import type { Note, CreateNoteInput } from '@/types/note';
+import type { Note, CreateNoteInput } from '@/types/types';
 
 interface NoteEditorProps {
     note: (Note & { id?: string }) | CreateNoteInput;
@@ -30,7 +30,7 @@ const NoteEditor = ({
                         <ArrowLeft className="h-4 w-4 mr-2" />
                         Back
                     </Button>
-                    <Button onClick={onSave} disabled={isLoading} className="flex items-center">
+                    <Button variant={'outline'} onClick={onSave} disabled={isLoading} className="flex items-center">
                         <Save className="h-4 w-4 mr-2" />
                         {isLoading ? 'Saving...' : 'Save'}
                     </Button>

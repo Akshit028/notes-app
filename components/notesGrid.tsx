@@ -1,5 +1,5 @@
 // components/NotesGrid.tsx
-import { Note } from '@/types/note';
+import { Note } from '@/types/types';
 import  NoteCard  from './noteCard';
 
 interface NotesGridProps {

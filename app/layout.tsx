@@ -7,6 +7,8 @@ import { getServerSession } from "next-auth";
 import options from "@/config/auth";
 import ProfileMenu from "@/components/profileMenu";
 import ModeToggle from "@/components/modeToggle";
+import CategoriesButton from "@/components/categoriesButton";
+import Link from "next/link";
 
 const poppins = Poppins({
   weight: ["400", "500", "600"],
@@ -33,19 +35,15 @@ const RootLayout = async ({
         <Providers>
           <Suspense>
             <div className="min-h-screen flex flex-col items-center">
-              {/* Container for max-w-2xl */}
               <div className="container mx-auto px-4 max-w-3xl">
-                {/* Shared Header */}
                 <header className="flex justify-between items-center my-8">
-                  <h1 className="text-2xl font-semibold">Notes</h1>
+                  <Link href={"/notes"} className="text-2xl font-semibold">Notes</Link>
                   <div className="flex justify-between gap-2 items-center">
+                    {session?.user && <CategoriesButton />}
                     <ModeToggle />
                     {session?.user && <ProfileMenu />}
                   </div>
-
                 </header>
-
-                {/* Main Content */}
                 <main>{children}</main>
               </div>
             </div>
