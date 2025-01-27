@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
+
 import { getServerSession } from "next-auth";
+
 import options from "@/config/auth";
 import { prisma } from "@/db/index";
 
 export async function POST(
     req: Request,
-    context: { params: { categoryId: string } }
+    { params }: { params: Promise<{ categoryId: string }> }
 ) {
     try {
         const session = await getServerSession(options);
@@ -14,6 +16,7 @@ export async function POST(
         }
 
         const { noteIds } = await req.json();
+        const { categoryId } = await params;  // Destructure after awaiting
 
         if (!noteIds || !Array.isArray(noteIds)) {
             return new NextResponse("Invalid input. 'noteIds' is required", {
@@ -22,7 +25,7 @@ export async function POST(
         }
 
         const category = await prisma.category.findUnique({
-            where: { id: context.params.categoryId },
+            where: { id: categoryId },
         });
 
         if (!category || category.userId !== session.user.id) {
@@ -39,7 +42,7 @@ export async function POST(
                         userId: session.user.id,
                     },
                     data: {
-                        categoryId: context.params.categoryId,
+                        categoryId: categoryId,  // Use the destructured categoryId
                     },
                 })
             )
@@ -47,7 +50,7 @@ export async function POST(
 
         const updatedNotes = await prisma.note.findMany({
             where: {
-                categoryId: context.params.categoryId,
+                categoryId: categoryId,
                 userId: session.user.id,
             },
             orderBy: {
@@ -58,45 +61,6 @@ export async function POST(
         return NextResponse.json(updatedNotes);
     } catch (error) {
         console.error("[ASSIGN_NOTES_POST]", error);
-        return new NextResponse("Internal Error", { status: 500 });
-    }
-}
-
-export async function GET(
-    req: Request,
-    context: { params: { categoryId: string } }
-) {
-    try {
-        const { categoryId } = context.params;
-
-        const session = await getServerSession(options);
-        if (!session?.user?.id) {
-            return new NextResponse("Unauthorized", { status: 401 });
-        }
-
-        const category = await prisma.category.findUnique({
-            where: { id: categoryId },
-        });
-
-        if (!category || category.userId !== session.user.id) {
-            return new NextResponse("Category not found or unauthorized", {
-                status: 404,
-            });
-        }
-
-        const notes = await prisma.note.findMany({
-            where: {
-                categoryId: categoryId,
-                userId: session.user.id,
-            },
-            orderBy: {
-                createdAt: "desc",
-            },
-        });
-
-        return NextResponse.json(notes);
-    } catch (error) {
-        console.error("[FETCH_CATEGORY_NOTES_GET]", error);
         return new NextResponse("Internal Error", { status: 500 });
     }
 }
