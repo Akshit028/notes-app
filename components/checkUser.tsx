@@ -1,12 +1,14 @@
-import options from "@/config/auth";
-import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 
-const CheckUser = async() => {
+import { getServerSession } from "next-auth";
+
+import options from "@/config/auth";
+
+const CheckUser = async () => {
     const session = await getServerSession(options);
-    if(session?.user){
+    if (session?.user) {
         return redirect("/notes");
     }
-}   
+};
 
 export default CheckUser;

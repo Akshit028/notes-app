@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { Note } from '@/types/types';
-import NoteEditor from './noteEditor';
-import { useNotes } from '@/hooks/useNotes';
-import Loading from '@/app/loading';
+import { useEffect, useState } from "react";
+
+import Loading from "@/app/loading";
+import { useNotes } from "@/hooks/useNotes";
+import { Note } from "@/types/types";
+
+import NoteEditor from "./noteEditor";
 
 interface NoteDetailComponentProps {
     noteId: string;
@@ -21,13 +23,15 @@ const NoteIdComponent = ({ noteId }: NoteDetailComponentProps) => {
             try {
                 const response = await fetch(`/api/notes/${noteId}`);
                 if (!response.ok) {
-                    throw new Error('Failed to fetch note');
+                    throw new Error("Failed to fetch note");
                 }
                 const data = await response.json();
                 setNote(data);
                 setIsLoading(false);
             } catch (err) {
-                setError(err instanceof Error ? err.message : 'An error occurred');
+                setError(
+                    err instanceof Error ? err.message : "An error occurred"
+                );
                 setIsLoading(false);
             }
         };
@@ -37,14 +41,14 @@ const NoteIdComponent = ({ noteId }: NoteDetailComponentProps) => {
 
     const handleSubmit = async () => {
         if (!note || !note.title.trim() || !note.content.trim()) {
-            setError('Title and content are required');
+            setError("Title and content are required");
             return;
         }
 
         try {
             await updateNote(note);
         } catch (error) {
-            console.error('Error updating note:', error);
+            console.error("Error updating note:", error);
         }
     };
 
@@ -53,7 +57,7 @@ const NoteIdComponent = ({ noteId }: NoteDetailComponentProps) => {
     ): void => {
         const { name, value } = e.target;
         setError(null);
-        setNote(prev => prev ? { ...prev, [name]: value } : null);
+        setNote((prev) => (prev ? { ...prev, [name]: value } : null));
     };
 
     if (isLoading) return <Loading />;

@@ -1,7 +1,9 @@
-import { NextResponse } from 'next/server';
-import { prisma } from '@/db/index';
-import { getServerSession } from 'next-auth';
-import options from '@/config/auth';
+import { NextResponse } from "next/server";
+
+import { getServerSession } from "next-auth";
+
+import options from "@/config/auth";
+import { prisma } from "@/db/index";
 
 export async function GET(
     _request: Request,
@@ -16,8 +18,8 @@ export async function GET(
         const note = await prisma.note.findUnique({
             where: {
                 id: params.noteId,
-                userId: session.user.id
-            }
+                userId: session.user.id,
+            },
         });
 
         if (!note) {
@@ -26,7 +28,7 @@ export async function GET(
 
         return NextResponse.json(note);
     } catch (error) {
-        console.error('[NOTE_GET]', error);
+        console.error("[NOTE_GET]", error);
         return new NextResponse("Internal Error", { status: 500 });
     }
 }

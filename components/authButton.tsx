@@ -1,9 +1,11 @@
 "use client";
 
-import { signIn, signOut, useSession } from 'next-auth/react';
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
+
 import { Loader2 } from "lucide-react";
-import { useState } from 'react';
+import { signIn, signOut, useSession } from "next-auth/react";
+
+import { Button } from "@/components/ui/button";
 
 const AuthButton = () => {
     const { status } = useSession();
@@ -25,8 +27,8 @@ const AuthButton = () => {
 
     if (status === "authenticated") {
         return (
-            <Button 
-                variant="secondary" 
+            <Button
+                variant="secondary"
                 onClick={() => signOut({ callbackUrl: "/" })}
             >
                 Sign Out
@@ -36,7 +38,7 @@ const AuthButton = () => {
 
     return (
         <div>
-            <Button 
+            <Button
                 variant="secondary"
                 onClick={handleSignIn}
                 disabled={isSigningIn}
@@ -48,9 +50,9 @@ const AuthButton = () => {
                     </>
                 ) : (
                     <>
-                        <svg 
-                            xmlns="http://www.w3.org/2000/svg" 
-                            viewBox="0 0 24 24" 
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
                             className="mr-2 h-4 w-4"
                         >
                             <path

@@ -1,7 +1,9 @@
-import { NextResponse } from 'next/server';
-import { prisma } from '@/db/index';
-import { getServerSession } from 'next-auth';
-import options from '@/config/auth';
+import { NextResponse } from "next/server";
+
+import { getServerSession } from "next-auth";
+
+import options from "@/config/auth";
+import { prisma } from "@/db/index";
 
 export async function GET(req: Request) {
     try {
@@ -11,7 +13,7 @@ export async function GET(req: Request) {
         }
 
         const { searchParams } = new URL(req.url);
-        const query = searchParams.get('q');
+        const query = searchParams.get("q");
 
         if (!query) {
             return NextResponse.json([]);
@@ -24,25 +26,25 @@ export async function GET(req: Request) {
                     {
                         title: {
                             contains: query,
-                            mode: 'insensitive',
+                            mode: "insensitive",
                         },
                     },
                     {
                         content: {
                             contains: query,
-                            mode: 'insensitive',
+                            mode: "insensitive",
                         },
                     },
                 ],
             },
             orderBy: {
-                createdAt: 'desc',
+                createdAt: "desc",
             },
         });
 
         return NextResponse.json(notes);
     } catch (error) {
-        console.error('[SEARCH_NOTES_GET]', error);
+        console.error("[SEARCH_NOTES_GET]", error);
         return new NextResponse("Internal Error", { status: 500 });
     }
 }

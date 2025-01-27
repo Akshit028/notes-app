@@ -22,7 +22,7 @@ const DeleteDialog = ({
     isLoading,
     onOpenChange,
     onConfirm,
-    description = "This action cannot be undone. This will permanently delete your note."
+    description = "This action cannot be undone. This will permanently delete your note.",
 }: DeleteDialogProps) => {
     return (
         <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
@@ -30,16 +30,17 @@ const DeleteDialog = ({
                 <AlertDialogHeader>
                     <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                     {description && (
-                        <AlertDialogDescription>{description}</AlertDialogDescription>
+                        <AlertDialogDescription>
+                            {description}
+                        </AlertDialogDescription>
                     )}
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                        onClick={onConfirm}
-                        disabled={isLoading}
-                    >
-                        {isLoading ? 'Deleting...' : 'Delete'}
+                    <AlertDialogCancel disabled={isLoading}>
+                        Cancel
+                    </AlertDialogCancel>
+                    <AlertDialogAction onClick={onConfirm} disabled={isLoading}>
+                        {isLoading ? "Deleting..." : "Delete"}
                     </AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>

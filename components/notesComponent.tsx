@@ -1,28 +1,41 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
+import { useParams } from "next/navigation";
+import React, { useEffect, useState } from "react";
+
+import { Plus } from "lucide-react";
+
+import Loading from "@/app/loading";
+import { Button } from "@/components/ui/button";
 import {
     Tooltip,
     TooltipContent,
     TooltipProvider,
     TooltipTrigger,
-} from "@/components/ui/tooltip"
-import { Plus } from 'lucide-react';
-import { useParams } from 'next/navigation';
-import NoteEditor from './noteEditor';
-import DeleteDialog from './deleteDialog';
-import NotesGrid from './notesGrid';
-import { useNotes } from '@/hooks/useNotes';
-import type { Note, CreateNoteInput } from '@/types/types';
-import Loading from '@/app/loading';
+} from "@/components/ui/tooltip";
+import { useNotes } from "@/hooks/useNotes";
+import type { CreateNoteInput, Note } from "@/types/types";
+
+import DeleteDialog from "./deleteDialog";
+import NoteEditor from "./noteEditor";
+import NotesGrid from "./notesGrid";
 
 const NotesComponent = () => {
     const params = useParams();
-    const { notes, isLoading, error, setError, createNote, updateNote, deleteNote } = useNotes();
-    const [currentNote, setCurrentNote] = useState<(Note & { id?: string }) | CreateNoteInput>({
-        title: '',
-        content: ''
+    const {
+        notes,
+        isLoading,
+        error,
+        setError,
+        createNote,
+        updateNote,
+        deleteNote,
+    } = useNotes();
+    const [currentNote, setCurrentNote] = useState<
+        (Note & { id?: string }) | CreateNoteInput
+    >({
+        title: "",
+        content: "",
     });
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [noteToDelete, setNoteToDelete] = useState<string | null>(null);
@@ -32,7 +45,7 @@ const NotesComponent = () => {
 
     useEffect(() => {
         if (params?.noteId && notes.length > 0) {
-            const note = notes.find(n => n.id === params.noteId);
+            const note = notes.find((n) => n.id === params.noteId);
             if (note) {
                 setCurrentNote(note);
                 setIsEditing(true);
@@ -43,34 +56,36 @@ const NotesComponent = () => {
 
     useEffect(() => {
         const checkTouchDevice = () => {
-            setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
+            setIsTouchDevice(
+                "ontouchstart" in window || navigator.maxTouchPoints > 0
+            );
         };
 
         checkTouchDevice();
-        window.addEventListener('resize', checkTouchDevice);
-        return () => window.removeEventListener('resize', checkTouchDevice);
+        window.addEventListener("resize", checkTouchDevice);
+        return () => window.removeEventListener("resize", checkTouchDevice);
     }, []);
 
     const handleSubmit = async (): Promise<void> => {
         if (!currentNote.title.trim() || !currentNote.content.trim()) {
-            setError('Title and content are required');
+            setError("Title and content are required");
             return;
         }
 
         try {
-            if (isEditing && 'id' in currentNote) {
+            if (isEditing && "id" in currentNote) {
                 await updateNote(currentNote as Note);
             } else {
                 await createNote({
                     title: currentNote.title.trim(),
-                    content: currentNote.content.trim()
+                    content: currentNote.content.trim(),
                 });
             }
             resetForm();
         } catch (error) {
+            console.log(error);
         }
     };
-
 
     const handleEdit = (note: Note) => {
         setCurrentNote(note);
@@ -80,7 +95,7 @@ const NotesComponent = () => {
     };
 
     const handleNewNote = () => {
-        setCurrentNote({ title: '', content: '' });
+        setCurrentNote({ title: "", content: "" });
         setIsEditing(false);
         setIsFullPageMode(true);
         setError(null);
@@ -95,11 +110,10 @@ const NotesComponent = () => {
     };
 
     const resetForm = () => {
-        setCurrentNote({ title: '', content: '' });
+        setCurrentNote({ title: "", content: "" });
         setIsEditing(false);
         setIsFullPageMode(false);
         setError(null);
-
     };
 
     const handleDeleteClick = (noteId: string) => {
@@ -113,9 +127,8 @@ const NotesComponent = () => {
                 await deleteNote(noteToDelete);
                 setIsDeleteDialogOpen(false);
                 setNoteToDelete(null);
-
             } catch (error) {
-                // Error is handled in the hook
+                console.log(error);
             }
         }
     };
@@ -133,11 +146,10 @@ const NotesComponent = () => {
         );
     }
 
-
     return (
         <div className="relative pb-20">
             {isLoading && !notes.length ? (
-                <div className="flex justify-center items-center min-h-[200px]">
+                <div className="flex min-h-[200px] items-center justify-center">
                     <Loading />
                 </div>
             ) : (
@@ -149,17 +161,16 @@ const NotesComponent = () => {
                         isTouchDevice={isTouchDevice}
                     />
                 </div>
-
             )}
             <TooltipProvider>
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <Button
-                            className="sticky bottom-4 rounded-full w-14 h-14 shadow-lg hover:shadow-xl transition-shadow"
+                            className="sticky bottom-4 h-14 w-14 rounded-full shadow-lg transition-shadow hover:shadow-xl"
                             size="icon"
                             onClick={handleNewNote}
                         >
-                            <Plus className='h-10 w-10' />
+                            <Plus className="h-10 w-10" />
                         </Button>
                     </TooltipTrigger>
                     <TooltipContent>
@@ -167,7 +178,6 @@ const NotesComponent = () => {
                     </TooltipContent>
                 </Tooltip>
             </TooltipProvider>
-
 
             <DeleteDialog
                 isOpen={isDeleteDialogOpen}
@@ -177,8 +187,10 @@ const NotesComponent = () => {
             />
 
             {error && (
-                <div className="fixed bottom-0 left-0 right-0 p-4 bg-destructive/10">
-                    <p className="text-destructive text-sm max-w-3xl mx-auto">{error}</p>
+                <div className="fixed bottom-0 left-0 right-0 bg-destructive/10 p-4">
+                    <p className="mx-auto max-w-3xl text-sm text-destructive">
+                        {error}
+                    </p>
                 </div>
             )}
         </div>
@@ -186,7 +198,3 @@ const NotesComponent = () => {
 };
 
 export default NotesComponent;
-
-
-
-

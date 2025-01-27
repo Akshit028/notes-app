@@ -1,5 +1,6 @@
-import { Note } from '@/types/types';
-import  NoteCard  from './noteCard';
+import { Note } from "@/types/types";
+
+import NoteCard from "./noteCard";
 
 interface NotesGridProps {
     notes: Note[];
@@ -14,7 +15,7 @@ const NotesGrid = ({
     onDelete,
     isTouchDevice,
 }: NotesGridProps) => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         {notes.map((note) => (
             <NoteCard
                 key={note.id}

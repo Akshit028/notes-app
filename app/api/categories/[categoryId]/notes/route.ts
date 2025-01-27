@@ -1,7 +1,9 @@
-import { NextResponse } from 'next/server';
-import { prisma } from '@/db/index';
-import { getServerSession } from 'next-auth';
-import options from '@/config/auth';
+import { NextResponse } from "next/server";
+
+import { getServerSession } from "next-auth";
+
+import options from "@/config/auth";
+import { prisma } from "@/db/index";
 
 export async function POST(
     req: Request,
@@ -16,7 +18,9 @@ export async function POST(
         const { noteIds } = await req.json();
 
         if (!noteIds || !Array.isArray(noteIds)) {
-            return new NextResponse("Invalid input. 'noteIds' is required", { status: 400 });
+            return new NextResponse("Invalid input. 'noteIds' is required", {
+                status: 400,
+            });
         }
 
         const category = await prisma.category.findUnique({
@@ -24,7 +28,9 @@ export async function POST(
         });
 
         if (!category || category.userId !== session.user.id) {
-            return new NextResponse("Category not found or unauthorized", { status: 404 });
+            return new NextResponse("Category not found or unauthorized", {
+                status: 404,
+            });
         }
 
         await prisma.$transaction(
@@ -32,7 +38,7 @@ export async function POST(
                 prisma.note.update({
                     where: {
                         id: noteId,
-                        userId: session.user.id, 
+                        userId: session.user.id,
                     },
                     data: {
                         categoryId: params.categoryId,
@@ -47,19 +53,21 @@ export async function POST(
                 userId: session.user.id,
             },
             orderBy: {
-                createdAt: 'desc',
+                createdAt: "desc",
             },
         });
 
         return NextResponse.json(updatedNotes);
     } catch (error) {
-        console.error('[ASSIGN_NOTES_POST]', error);
+        console.error("[ASSIGN_NOTES_POST]", error);
         return new NextResponse("Internal Error", { status: 500 });
     }
 }
 
-
-export async function GET(req: Request, context: { params: { categoryId: string } }) {
+export async function GET(
+    req: Request,
+    context: { params: { categoryId: string } }
+) {
     try {
         const { categoryId } = await context.params;
 
@@ -73,7 +81,9 @@ export async function GET(req: Request, context: { params: { categoryId: string 
         });
 
         if (!category || category.userId !== session.user.id) {
-            return new NextResponse("Category not found or unauthorized", { status: 404 });
+            return new NextResponse("Category not found or unauthorized", {
+                status: 404,
+            });
         }
 
         const notes = await prisma.note.findMany({
@@ -82,13 +92,13 @@ export async function GET(req: Request, context: { params: { categoryId: string 
                 userId: session.user.id,
             },
             orderBy: {
-                createdAt: 'desc',
+                createdAt: "desc",
             },
         });
 
         return NextResponse.json(notes);
     } catch (error) {
-        console.error('[FETCH_CATEGORY_NOTES_GET]', error);
+        console.error("[FETCH_CATEGORY_NOTES_GET]", error);
         return new NextResponse("Internal Error", { status: 500 });
     }
 }

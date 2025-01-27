@@ -1,9 +1,11 @@
-import NotesComponent from '@/components/notesComponent';
-import options from '@/config/auth'
-import requireAuth from '@/utils/requireAuth';
-import type { NextPage } from 'next';
-import { getServerSession } from 'next-auth'
-import React from 'react'
+import type { NextPage } from "next";
+import React from "react";
+
+import { getServerSession } from "next-auth";
+
+import NotesComponent from "@/components/notesComponent";
+import options from "@/config/auth";
+import requireAuth from "@/utils/requireAuth";
 
 const Page: NextPage = async () => {
     await requireAuth();
@@ -15,6 +17,6 @@ const Page: NextPage = async () => {
             <NotesComponent />
         </div>
     );
-}
+};
 
 export default Page;
