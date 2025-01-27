@@ -1,38 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { prisma } from "@/db/index";
-import options from "@/config/auth";
+
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 export async function DELETE(
-    request: NextRequest,
-    { params }: { 
-        params: { 
-            categoryId: string; 
-            noteId: string; 
-        } 
-    }
-): Promise<NextResponse> {
+    _request: NextRequest,
+    { params }: { params: Promise<{ categoryId: string; noteId: string }> }
+) {
     try {
-        const session = await getServerSession(options);
-        if (!session?.user?.id) {
-            return new NextResponse("Unauthorized", { status: 401 });
-        }
-
         await prisma.note.update({
-            where: { 
-                id: params.noteId,
-                userId: session.user.id
-            },
+            where: { id: (await params).noteId },
             data: {
                 categoryId: null,
             },
         });
 
         const updatedNotes = await prisma.note.findMany({
-            where: { 
-                categoryId: params.categoryId,
-                userId: session.user.id
-            },
+            where: { categoryId: (await params).categoryId },
         });
 
         return NextResponse.json(updatedNotes, { status: 200 });
