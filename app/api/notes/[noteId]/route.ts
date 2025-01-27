@@ -7,7 +7,7 @@ import { prisma } from "@/db/index";
 
 export async function GET(
     _request: Request,
-    { params }: { params: { noteId: string } }
+    { params }: { params: Promise<{ noteId: string }> }
 ) {
     try {
         const session = await getServerSession(options);
@@ -17,7 +17,7 @@ export async function GET(
 
         const note = await prisma.note.findUnique({
             where: {
-                id: params.noteId,
+                id: (await params).noteId,
                 userId: session.user.id,
             },
         });

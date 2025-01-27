@@ -7,7 +7,7 @@ import { prisma } from "@/db/index";
 
 export async function GET(
     req: Request,
-    { params }: { params: { categoryId: string } }
+    { params }: { params: Promise<{ categoryId: string }> }
 ) {
     try {
         const session = await getServerSession(options);
@@ -15,13 +15,13 @@ export async function GET(
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
-        if (!params.categoryId) {
+        if (!(await params).categoryId) {
             return new NextResponse("Category ID is required", { status: 400 });
         }
 
         const category = await prisma.category.findUnique({
             where: {
-                id: params.categoryId,
+                id: (await params).categoryId,
                 userId: session.user.id,
             },
         });
@@ -39,7 +39,7 @@ export async function GET(
 
 export async function PUT(
     request: NextRequest,
-    { params }: { params: { categoryId: string } }
+    { params }: { params: Promise<{ categoryId: string }> }
 ) {
     try {
         const { name } = await request.json();
@@ -52,7 +52,7 @@ export async function PUT(
         }
 
         const updatedCategory = await prisma.category.update({
-            where: { id: params.categoryId },
+            where: { id: (await params).categoryId },
             data: { name },
         });
 
@@ -68,11 +68,11 @@ export async function PUT(
 
 export async function DELETE(
     _request: NextRequest,
-    { params }: { params: { categoryId: string } }
+    { params }: { params: Promise<{ categoryId: string }> }
 ) {
     try {
         await prisma.category.delete({
-            where: { id: params.categoryId },
+            where: { id: (await params).categoryId },
         });
 
         return NextResponse.json(
