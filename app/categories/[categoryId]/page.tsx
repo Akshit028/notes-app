@@ -1,9 +1,9 @@
 import CategoryContent from "@/components/categoryContent";
 
 interface PageProps {
-    params: {
+    params: Promise<{
         categoryId: string;
-    };
+    }>;
 }
 
 const page = async ({ params }: PageProps) => {
