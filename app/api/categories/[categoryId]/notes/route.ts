@@ -8,7 +8,7 @@ import { prisma } from "@/db/index";
 export async function POST(
     req: Request,
     { params }: { params: { categoryId: string } }
-) {
+): Promise<NextResponse<unknown>> {
     try {
         const session = await getServerSession(options);
         if (!session?.user?.id) {
