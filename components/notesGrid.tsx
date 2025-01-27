@@ -1,4 +1,3 @@
-// components/NotesGrid.tsx
 import { Note } from '@/types/types';
 import  NoteCard  from './noteCard';
 
@@ -15,7 +14,7 @@ const NotesGrid = ({
     onDelete,
     isTouchDevice,
 }: NotesGridProps) => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {notes.map((note) => (
             <NoteCard
                 key={note.id}

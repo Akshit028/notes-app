@@ -1,4 +1,3 @@
-// components/NotesComponent.
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -10,6 +9,7 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { Plus } from 'lucide-react';
+import { useParams } from 'next/navigation';
 import NoteEditor from './noteEditor';
 import DeleteDialog from './deleteDialog';
 import NotesGrid from './notesGrid';
@@ -18,6 +18,7 @@ import type { Note, CreateNoteInput } from '@/types/types';
 import Loading from '@/app/loading';
 
 const NotesComponent = () => {
+    const params = useParams();
     const { notes, isLoading, error, setError, createNote, updateNote, deleteNote } = useNotes();
     const [currentNote, setCurrentNote] = useState<(Note & { id?: string }) | CreateNoteInput>({
         title: '',
@@ -28,6 +29,17 @@ const NotesComponent = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [isFullPageMode, setIsFullPageMode] = useState(false);
     const [isTouchDevice, setIsTouchDevice] = useState(false);
+
+    useEffect(() => {
+        if (params?.noteId && notes.length > 0) {
+            const note = notes.find(n => n.id === params.noteId);
+            if (note) {
+                setCurrentNote(note);
+                setIsEditing(true);
+                setIsFullPageMode(true);
+            }
+        }
+    }, [params?.noteId, notes]);
 
     useEffect(() => {
         const checkTouchDevice = () => {
@@ -56,9 +68,9 @@ const NotesComponent = () => {
             }
             resetForm();
         } catch (error) {
-            // Error is handled in the hook
         }
     };
+
 
     const handleEdit = (note: Note) => {
         setCurrentNote(note);
@@ -87,6 +99,7 @@ const NotesComponent = () => {
         setIsEditing(false);
         setIsFullPageMode(false);
         setError(null);
+
     };
 
     const handleDeleteClick = (noteId: string) => {
@@ -100,6 +113,7 @@ const NotesComponent = () => {
                 await deleteNote(noteToDelete);
                 setIsDeleteDialogOpen(false);
                 setNoteToDelete(null);
+
             } catch (error) {
                 // Error is handled in the hook
             }
@@ -119,24 +133,23 @@ const NotesComponent = () => {
         );
     }
 
+
     return (
         <div className="relative pb-20">
             {isLoading && !notes.length ? (
                 <div className="flex justify-center items-center min-h-[200px]">
                     <Loading />
                 </div>
-            ) : notes.length === 0 ? (
-                <div className="text-center py-12">
-                    <p className="text-muted-foreground mb-4">No notes yet</p>
-                    <Button onClick={handleNewNote}>Create your first note</Button>
-                </div>
             ) : (
-                <NotesGrid
-                    notes={notes}
-                    onEdit={handleEdit}
-                    onDelete={handleDeleteClick}
-                    isTouchDevice={isTouchDevice}
-                />
+                <div>
+                    <NotesGrid
+                        notes={notes}
+                        onEdit={handleEdit}
+                        onDelete={handleDeleteClick}
+                        isTouchDevice={isTouchDevice}
+                    />
+                </div>
+
             )}
             <TooltipProvider>
                 <Tooltip>
@@ -146,7 +159,7 @@ const NotesComponent = () => {
                             size="icon"
                             onClick={handleNewNote}
                         >
-                            <Plus className='h-10 w-10'/>
+                            <Plus className='h-10 w-10' />
                         </Button>
                     </TooltipTrigger>
                     <TooltipContent>

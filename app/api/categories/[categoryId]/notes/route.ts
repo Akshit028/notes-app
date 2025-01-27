@@ -19,7 +19,6 @@ export async function POST(
             return new NextResponse("Invalid input. 'noteIds' is required", { status: 400 });
         }
 
-        // Verify the category belongs to the user
         const category = await prisma.category.findUnique({
             where: { id: params.categoryId },
         });
@@ -28,13 +27,12 @@ export async function POST(
             return new NextResponse("Category not found or unauthorized", { status: 404 });
         }
 
-        // Assign notes to the category
         await prisma.$transaction(
             noteIds.map((noteId) =>
                 prisma.note.update({
                     where: {
                         id: noteId,
-                        userId: session.user.id, // Ensure the note belongs to the user
+                        userId: session.user.id, 
                     },
                     data: {
                         categoryId: params.categoryId,
@@ -43,7 +41,6 @@ export async function POST(
             )
         );
 
-        // Fetch updated notes in this category
         const updatedNotes = await prisma.note.findMany({
             where: {
                 categoryId: params.categoryId,
@@ -64,14 +61,13 @@ export async function POST(
 
 export async function GET(req: Request, context: { params: { categoryId: string } }) {
     try {
-        const { categoryId } = await context.params; // Await the params
+        const { categoryId } = await context.params;
 
         const session = await getServerSession(options);
         if (!session?.user?.id) {
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
-        // Verify the category exists and belongs to the user
         const category = await prisma.category.findUnique({
             where: { id: categoryId },
         });
@@ -80,7 +76,6 @@ export async function GET(req: Request, context: { params: { categoryId: string 
             return new NextResponse("Category not found or unauthorized", { status: 404 });
         }
 
-        // Fetch notes in the category
         const notes = await prisma.note.findMany({
             where: {
                 categoryId: categoryId,

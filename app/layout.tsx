@@ -9,6 +9,9 @@ import ProfileMenu from "@/components/profileMenu";
 import ModeToggle from "@/components/modeToggle";
 import CategoriesButton from "@/components/categoriesButton";
 import Link from "next/link";
+import SearchComponent from "@/components/searchComponent";
+import { Toaster } from "@/components/ui/toaster"
+
 
 const poppins = Poppins({
   weight: ["400", "500", "600"],
@@ -36,15 +39,22 @@ const RootLayout = async ({
           <Suspense>
             <div className="min-h-screen flex flex-col items-center">
               <div className="container mx-auto px-4 max-w-3xl">
-                <header className="flex justify-between items-center my-8">
-                  <Link href={"/notes"} className="text-2xl font-semibold">Notes</Link>
-                  <div className="flex justify-between gap-2 items-center">
+                <header className="flex flex-col ">
+                  <div className="flex justify-between items-center mt-8 mb-2">
+                    <Link href={"/notes"} className="text-3xl font-semibold">Notes</Link>
+                    <div className="flex gap-4 items-center">
+                      <ModeToggle />
+                      {session?.user && <ProfileMenu />}
+                    </div>
+
+                  </div>
+                  <div className="flex justify-between items-center gap-4 mb-8">
+                    {session?.user && <SearchComponent />}
                     {session?.user && <CategoriesButton />}
-                    <ModeToggle />
-                    {session?.user && <ProfileMenu />}
                   </div>
                 </header>
                 <main>{children}</main>
+                <Toaster />
               </div>
             </div>
           </Suspense>

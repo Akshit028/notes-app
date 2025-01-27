@@ -3,7 +3,7 @@ import { Button } from "./ui/button"
 
 const categoriesButton = () => {
     return (
-        <Button variant={"outline"} asChild>
+        <Button className="rounded-full" variant={"outline"} asChild>
             <Link href="/categories">Categories</Link>
         </Button>
     )

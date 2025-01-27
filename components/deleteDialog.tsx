@@ -1,4 +1,3 @@
-// components/DeleteConfirmationDialog.tsx
 import {
     AlertDialog,
     AlertDialogAction,
@@ -15,6 +14,7 @@ interface DeleteDialogProps {
     isLoading: boolean;
     onOpenChange: (open: boolean) => void;
     onConfirm: () => void;
+    description?: string;
 }
 
 const DeleteDialog = ({
@@ -22,15 +22,16 @@ const DeleteDialog = ({
     isLoading,
     onOpenChange,
     onConfirm,
+    description = "This action cannot be undone. This will permanently delete your note."
 }: DeleteDialogProps) => {
     return (
         <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
             <AlertDialogContent>
                 <AlertDialogHeader>
                     <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete your note.
-                    </AlertDialogDescription>
+                    {description && (
+                        <AlertDialogDescription>{description}</AlertDialogDescription>
+                    )}
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>

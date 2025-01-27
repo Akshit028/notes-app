@@ -16,8 +16,9 @@ import Loading from '@/app/loading';
 import NoteEditor from '@/components/noteEditor';
 import DeleteDialog from '@/components/deleteDialog';
 import { useNotes } from '@/hooks/useNotes';
-import { Trash2 } from 'lucide-react';
 import NoteCard from '@/components/noteCard';
+import { useRouter } from 'next/navigation';
+import { ArrowLeft } from 'lucide-react';
 
 
 interface CategoryContentProps {
@@ -25,7 +26,7 @@ interface CategoryContentProps {
 }
 
 const CategoryContent = ({ categoryId }: CategoryContentProps) => {
-    const { updateNote, deleteNote } = useNotes();
+    const { updateNote } = useNotes();
     const [category, setCategory] = useState<Category | null>(null);
     const [categoryNotes, setCategoryNotes] = useState<Note[]>([]);
     const [allNotes, setAllNotes] = useState<Note[]>([]);
@@ -42,6 +43,7 @@ const CategoryContent = ({ categoryId }: CategoryContentProps) => {
     const [isEditing, setIsEditing] = useState(false);
     const [isFullPageMode, setIsFullPageMode] = useState(false);
     const [isTouchDevice, setIsTouchDevice] = useState(false);
+    const router = useRouter();
 
     useEffect(() => {
         const checkTouchDevice = () => {
@@ -142,7 +144,13 @@ const CategoryContent = ({ categoryId }: CategoryContentProps) => {
     const handleConfirmDelete = async () => {
         if (noteToDelete) {
             try {
-                await deleteNote(noteToDelete);
+                const response = await fetch(`/api/categories/${categoryId}/notes/${noteToDelete}`, {
+                    method: 'DELETE',
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to remove note from category');
+                }
                 // Remove note from category notes
                 setCategoryNotes(prev => prev.filter(note => note.id !== noteToDelete));
                 setIsDeleteDialogOpen(false);
@@ -185,6 +193,10 @@ const CategoryContent = ({ categoryId }: CategoryContentProps) => {
         }
     };
 
+    const handleGoBack = () => {
+        router.push('/categories');
+    }
+
     if (isLoading) return <Loading />;
 
     if (error || !category) {
@@ -211,6 +223,14 @@ const CategoryContent = ({ categoryId }: CategoryContentProps) => {
     return (
         <div className="p-4">
             <div className="flex justify-between items-center mb-6">
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleGoBack}
+                    className="mr-4"
+                >
+                    <ArrowLeft className="h-6 w-6" />
+                </Button>
                 <h1 className="text-2xl font-bold">{category.name}</h1>
                 <Dialog open={open} onOpenChange={setOpen}>
                     <DialogTrigger asChild>
@@ -218,7 +238,7 @@ const CategoryContent = ({ categoryId }: CategoryContentProps) => {
                     </DialogTrigger>
                     <DialogContent className="max-h-[80vh] overflow-y-auto">
                         <DialogHeader>
-                            <DialogTitle>Add Notes to Category</DialogTitle>
+                            <DialogTitle className='flex items-start'>Add Notes to Category</DialogTitle>
                         </DialogHeader>
                         <div className="space-y-4">
                             {allNotes.length === 0 ? (
@@ -226,7 +246,7 @@ const CategoryContent = ({ categoryId }: CategoryContentProps) => {
                             ) : (
                                 <div className="space-y-2">
                                     {allNotes.map((note) => (
-                                        <div key={note.id} className="flex items-start space-x-3 p-2 hover:bg-gray-50 rounded">
+                                        <div key={note.id} className="flex items-start space-x-3 p-2 hover:bg-gray-50 dark:hover:bg-[#27272A] rounded">
                                             <Checkbox
                                                 id={note.id}
                                                 checked={selectedNotes.includes(note.id)}
@@ -249,7 +269,6 @@ const CategoryContent = ({ categoryId }: CategoryContentProps) => {
                                 <Button
                                     onClick={handleAssignNotes}
                                     disabled={selectedNotes.length === 0}
-                                    className="w-full"
                                 >
                                     Add Selected Notes
                                 </Button>
@@ -259,7 +278,7 @@ const CategoryContent = ({ categoryId }: CategoryContentProps) => {
                 </Dialog>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {categoryNotes.map((note) => (
                     <NoteCard
                         key={note.id}
@@ -276,6 +295,7 @@ const CategoryContent = ({ categoryId }: CategoryContentProps) => {
                 isLoading={isLoading}
                 onOpenChange={setIsDeleteDialogOpen}
                 onConfirm={handleConfirmDelete}
+                description='This will delete the note from this category.'
             />
 
             {error && (

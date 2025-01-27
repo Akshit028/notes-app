@@ -6,7 +6,6 @@ import options from '@/config/auth';
 export async function GET() {
     try {
         const session = await getServerSession(options);
-        console.log("Session:", session); // Debug log
 
         if (!session || !session.user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -30,14 +29,12 @@ export async function GET() {
 export async function POST(request: Request) {
     try {
         const session = await getServerSession(options);
-        console.log("Session in POST:", session); // Debug log
 
         if (!session?.user?.id) {
             return NextResponse.json({ error: 'Unauthorized - No user ID' }, { status: 401 });
         }
 
         const body = await request.json();
-        console.log("Request body:", body); // Debug log
 
         const { title, content } = body;
 
@@ -77,7 +74,6 @@ export async function DELETE(request: Request) {
             return NextResponse.json({ error: 'Note ID is required' }, { status: 400 });
         }
 
-        // Verify note belongs to user before deleting
         const note = await prisma.note.findFirst({
             where: {
                 id: noteId,
@@ -115,7 +111,6 @@ export async function PATCH(request: Request) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
-        // Verify note belongs to user before updating
         const existingNote = await prisma.note.findFirst({
             where: {
                 id,
