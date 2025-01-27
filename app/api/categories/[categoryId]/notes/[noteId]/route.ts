@@ -3,9 +3,16 @@ import { getServerSession } from "next-auth";
 import { prisma } from "@/db/index";
 import options from "@/config/auth";
 
+type RouteContext = {
+    params: {
+        categoryId: string;
+        noteId: string;
+    }
+}
+
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { categoryId: string; noteId: string } }
+    context: RouteContext
 ) {
     try {
         const session = await getServerSession(options);
@@ -15,8 +22,8 @@ export async function DELETE(
 
         await prisma.note.update({
             where: { 
-                id: params.noteId,
-                userId: session.user.id  // Add user check for security
+                id: context.params.noteId,
+                userId: session.user.id
             },
             data: {
                 categoryId: null,
@@ -25,8 +32,8 @@ export async function DELETE(
 
         const updatedNotes = await prisma.note.findMany({
             where: { 
-                categoryId: params.categoryId,
-                userId: session.user.id  // Add user check for security
+                categoryId: context.params.categoryId,
+                userId: session.user.id
             },
         });
 
