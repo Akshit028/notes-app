@@ -1,14 +1,12 @@
 import { NextResponse } from "next/server";
-
 import { getServerSession } from "next-auth";
-
 import options from "@/config/auth";
 import { prisma } from "@/db/index";
 
 export async function POST(
     req: Request,
-    { params }: { params: { categoryId: string } }
-): Promise<NextResponse<unknown>> {
+    context: { params: { categoryId: string } }
+) {
     try {
         const session = await getServerSession(options);
         if (!session?.user?.id) {
@@ -24,7 +22,7 @@ export async function POST(
         }
 
         const category = await prisma.category.findUnique({
-            where: { id: params.categoryId },
+            where: { id: context.params.categoryId },
         });
 
         if (!category || category.userId !== session.user.id) {
@@ -41,7 +39,7 @@ export async function POST(
                         userId: session.user.id,
                     },
                     data: {
-                        categoryId: params.categoryId,
+                        categoryId: context.params.categoryId,
                     },
                 })
             )
@@ -49,7 +47,7 @@ export async function POST(
 
         const updatedNotes = await prisma.note.findMany({
             where: {
-                categoryId: params.categoryId,
+                categoryId: context.params.categoryId,
                 userId: session.user.id,
             },
             orderBy: {
@@ -69,7 +67,7 @@ export async function GET(
     context: { params: { categoryId: string } }
 ) {
     try {
-        const { categoryId } = await context.params;
+        const { categoryId } = context.params;
 
         const session = await getServerSession(options);
         if (!session?.user?.id) {
