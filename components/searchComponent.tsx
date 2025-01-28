@@ -64,7 +64,7 @@ const GlobalSearch = () => {
             </div>
 
             {query.trim() !== "" && (
-                <div className="absolute z-10 mt-1 max-h-[300px] w-full overflow-y-auto rounded-md border bg-white shadow-lg">
+                <div className="absolute z-10 mt-1 max-h-[300px] w-full overflow-y-auto rounded-md border bg-white shadow-lg dark:bg-black">
                     {results.length === 0 && !isLoading ? (
                         <p className="py-4 text-center text-muted-foreground">
                             No matching notes.

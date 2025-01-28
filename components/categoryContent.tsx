@@ -28,6 +28,8 @@ interface CategoryContentProps {
 
 const CategoryContent = ({ categoryId }: CategoryContentProps) => {
     const { updateNote } = useNotes();
+    const router = useRouter();
+
     const [category, setCategory] = useState<Category | null>(null);
     const [categoryNotes, setCategoryNotes] = useState<Note[]>([]);
     const [allNotes, setAllNotes] = useState<Note[]>([]);
@@ -46,7 +48,6 @@ const CategoryContent = ({ categoryId }: CategoryContentProps) => {
     const [isEditing, setIsEditing] = useState(false);
     const [isFullPageMode, setIsFullPageMode] = useState(false);
     const [isTouchDevice, setIsTouchDevice] = useState(false);
-    const router = useRouter();
 
     useEffect(() => {
         const checkTouchDevice = () => {
@@ -54,7 +55,6 @@ const CategoryContent = ({ categoryId }: CategoryContentProps) => {
                 "ontouchstart" in window || navigator.maxTouchPoints > 0
             );
         };
-
         checkTouchDevice();
         window.addEventListener("resize", checkTouchDevice);
         return () => window.removeEventListener("resize", checkTouchDevice);
@@ -69,29 +69,25 @@ const CategoryContent = ({ categoryId }: CategoryContentProps) => {
             }
 
             try {
-                // Fetch category
-                const categoryResponse = await fetch(
-                    `/api/categories/${categoryId}`
-                );
-                if (!categoryResponse.ok)
-                    throw new Error("Failed to fetch category");
-                const categoryData = await categoryResponse.json();
+                const [categoryRes, notesRes, allNotesRes] = await Promise.all([
+                    fetch(`/api/categories/${categoryId}`),
+                    fetch(`/api/categories/${categoryId}/notes`),
+                    fetch("/api/notes"),
+                ]);
+
+                if (!categoryRes.ok || !notesRes.ok || !allNotesRes.ok) {
+                    throw new Error("Failed to fetch data");
+                }
+
+                const [categoryData, categoryNotesData, allNotesData] =
+                    await Promise.all([
+                        categoryRes.json(),
+                        notesRes.json(),
+                        allNotesRes.json(),
+                    ]);
+
                 setCategory(categoryData);
-
-                // Fetch notes in this category
-                const categoryNotesResponse = await fetch(
-                    `/api/categories/${categoryId}/notes`
-                );
-                if (!categoryNotesResponse.ok)
-                    throw new Error("Failed to fetch category notes");
-                const categoryNotesData = await categoryNotesResponse.json();
                 setCategoryNotes(categoryNotesData);
-
-                // Fetch all user notes
-                const allNotesResponse = await fetch("/api/notes");
-                if (!allNotesResponse.ok)
-                    throw new Error("Failed to fetch notes");
-                const allNotesData = await allNotesResponse.json();
                 setAllNotes(allNotesData);
             } catch (err) {
                 setError(
@@ -115,14 +111,10 @@ const CategoryContent = ({ categoryId }: CategoryContentProps) => {
         try {
             if (isEditing && "id" in currentNote) {
                 await updateNote(currentNote as Note);
-                // Refresh category notes after update
                 const response = await fetch(
                     `/api/categories/${categoryId}/notes`
                 );
-                if (response.ok) {
-                    const updatedNotes = await response.json();
-                    setCategoryNotes(updatedNotes);
-                }
+                if (response.ok) setCategoryNotes(await response.json());
             }
             resetForm();
         } catch (error) {
@@ -158,27 +150,25 @@ const CategoryContent = ({ categoryId }: CategoryContentProps) => {
     };
 
     const handleConfirmDelete = async () => {
-        if (noteToDelete) {
-            try {
-                const response = await fetch(
-                    `/api/categories/${categoryId}/notes/${noteToDelete}`,
-                    {
-                        method: "DELETE",
-                    }
-                );
+        if (!noteToDelete) return;
 
-                if (!response.ok) {
-                    throw new Error("Failed to remove note from category");
+        try {
+            const response = await fetch(
+                `/api/categories/${categoryId}/notes/${noteToDelete}`,
+                {
+                    method: "DELETE",
                 }
-                // Remove note from category notes
+            );
+
+            if (response.ok) {
                 setCategoryNotes((prev) =>
                     prev.filter((note) => note.id !== noteToDelete)
                 );
                 setIsDeleteDialogOpen(false);
                 setNoteToDelete(null);
-            } catch (error) {
-                console.error("Error deleting note:", error);
             }
+        } catch (error) {
+            console.error("Error deleting note:", error);
         }
     };
 
@@ -196,30 +186,41 @@ const CategoryContent = ({ categoryId }: CategoryContentProps) => {
                 `/api/categories/${categoryId}/notes`,
                 {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
+                    headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ noteIds: selectedNotes }),
                 }
             );
 
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(errorText);
+            if (response.ok) {
+                setCategoryNotes(await response.json());
+                setSelectedNotes([]);
+                setOpen(false);
             }
-
-            const updatedNotes = await response.json();
-            setCategoryNotes(updatedNotes);
-            setSelectedNotes([]);
-            setOpen(false);
         } catch (error) {
             console.error("Error assigning notes:", error);
         }
     };
 
-    const handleGoBack = () => {
-        router.push("/categories");
-    };
+    const handleGoBack = () => router.push("/categories");
+
+    const ErrorMessage = () => (
+        <div className="fixed bottom-0 left-0 right-0 bg-destructive/10 p-4">
+            <p className="mx-auto max-w-3xl text-sm text-destructive">
+                {error}
+            </p>
+        </div>
+    );
+
+    const NoteEditorComponent = () => (
+        <NoteEditor
+            note={currentNote}
+            isLoading={isLoading}
+            error={error}
+            onSave={handleSubmit}
+            onClose={resetForm}
+            onChange={handleInputChange}
+        />
+    );
 
     if (isLoading) return <Loading />;
 
@@ -231,18 +232,7 @@ const CategoryContent = ({ categoryId }: CategoryContentProps) => {
         );
     }
 
-    if (isFullPageMode) {
-        return (
-            <NoteEditor
-                note={currentNote}
-                isLoading={isLoading}
-                error={error}
-                onSave={handleSubmit}
-                onClose={resetForm}
-                onChange={handleInputChange}
-            />
-        );
-    }
+    if (isFullPageMode) return <NoteEditorComponent />;
 
     return (
         <div className="p-4">
@@ -256,15 +246,14 @@ const CategoryContent = ({ categoryId }: CategoryContentProps) => {
                     <ArrowLeft className="h-6 w-6" />
                 </Button>
                 <h1 className="text-2xl font-bold">{category.name}</h1>
+
                 <Dialog open={open} onOpenChange={setOpen}>
                     <DialogTrigger asChild>
                         <Button>Add Notes</Button>
                     </DialogTrigger>
                     <DialogContent className="max-h-[80vh] overflow-y-auto">
                         <DialogHeader>
-                            <DialogTitle className="flex items-start">
-                                Add Notes to Category
-                            </DialogTitle>
+                            <DialogTitle>Add Notes to Category</DialogTitle>
                         </DialogHeader>
                         <div className="space-y-4">
                             {allNotes.length === 0 ? (
@@ -272,49 +261,50 @@ const CategoryContent = ({ categoryId }: CategoryContentProps) => {
                                     No notes available
                                 </p>
                             ) : (
-                                <div className="space-y-2">
-                                    {allNotes.map((note) => (
-                                        <div
-                                            key={note.id}
-                                            className="flex items-start space-x-3 rounded p-2 hover:bg-gray-50 dark:hover:bg-[#27272A]"
-                                        >
-                                            <Checkbox
-                                                id={note.id}
-                                                checked={selectedNotes.includes(
-                                                    note.id
-                                                )}
-                                                onCheckedChange={() =>
-                                                    handleNoteSelection(note.id)
-                                                }
-                                            />
-                                            <div className="flex-1">
-                                                <Label
-                                                    htmlFor={note.id}
-                                                    className="font-medium"
-                                                >
-                                                    {note.title}
-                                                </Label>
-                                                <p className="mt-1 text-sm text-gray-600">
-                                                    {note.content.substring(
-                                                        0,
-                                                        100
+                                <>
+                                    <div className="space-y-2">
+                                        {allNotes.map((note) => (
+                                            <div
+                                                key={note.id}
+                                                className="flex items-start space-x-3 rounded p-2 hover:bg-gray-50 dark:hover:bg-[#27272A]"
+                                            >
+                                                <Checkbox
+                                                    id={note.id}
+                                                    checked={selectedNotes.includes(
+                                                        note.id
                                                     )}
-                                                    {note.content.length > 100
-                                                        ? "..."
-                                                        : ""}
-                                                </p>
+                                                    onCheckedChange={() =>
+                                                        handleNoteSelection(
+                                                            note.id
+                                                        )
+                                                    }
+                                                />
+                                                <div className="flex-1">
+                                                    <Label
+                                                        htmlFor={note.id}
+                                                        className="font-medium"
+                                                    >
+                                                        {note.title}
+                                                    </Label>
+                                                    <p className="mt-1 text-sm text-gray-600">
+                                                        {note.content.substring(
+                                                            0,
+                                                            100
+                                                        )}
+                                                        {note.content.length >
+                                                            100 && "..."}
+                                                    </p>
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                            {allNotes.length > 0 && (
-                                <Button
-                                    onClick={handleAssignNotes}
-                                    disabled={selectedNotes.length === 0}
-                                >
-                                    Add Selected Notes
-                                </Button>
+                                        ))}
+                                    </div>
+                                    <Button
+                                        onClick={handleAssignNotes}
+                                        disabled={selectedNotes.length === 0}
+                                    >
+                                        Add Selected Notes
+                                    </Button>
+                                </>
                             )}
                         </div>
                     </DialogContent>
@@ -341,13 +331,7 @@ const CategoryContent = ({ categoryId }: CategoryContentProps) => {
                 description="This will delete the note from this category."
             />
 
-            {error && (
-                <div className="fixed bottom-0 left-0 right-0 bg-destructive/10 p-4">
-                    <p className="mx-auto max-w-3xl text-sm text-destructive">
-                        {error}
-                    </p>
-                </div>
-            )}
+            {error && <ErrorMessage />}
         </div>
     );
 };
